@@ -1,0 +1,442 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>AI 多人出行汇合点推荐助手</title>
+  <meta name="description" content="基于腾讯位置服务场景设计的 AI 多人出行汇合点推荐助手 Demo" />
+  <style>
+    :root {
+      --bg: #0b1020;
+      --panel: rgba(255,255,255,.08);
+      --card: rgba(255,255,255,.06);
+      --line: rgba(255,255,255,.12);
+      --text: #eaf2ff;
+      --muted: #a9b7d3;
+      --brand: #4da3ff;
+      --brand2: #6cf0c2;
+      --warn: #ffd166;
+      --good: #7ef29a;
+      --shadow: 0 12px 40px rgba(0,0,0,.28);
+      --radius: 18px;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+      background: radial-gradient(circle at top right, rgba(77,163,255,.18), transparent 28%),
+                  radial-gradient(circle at top left, rgba(108,240,194,.12), transparent 24%),
+                  linear-gradient(180deg, #08101f, #111a2f 42%, #101827 100%);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    a { color: #8bc3ff; }
+    .wrap { max-width: 1240px; margin: 0 auto; padding: 28px 20px 56px; }
+    .hero {
+      display: grid; grid-template-columns: 1.2fr .8fr; gap: 20px; align-items: stretch;
+      margin-bottom: 24px;
+    }
+    .hero-card, .panel, .card { background: var(--panel); backdrop-filter: blur(12px); border: 1px solid var(--line); border-radius: var(--radius); box-shadow: var(--shadow); }
+    .hero-card { padding: 26px; }
+    .hero h1 { margin: 0 0 12px; font-size: 34px; line-height: 1.15; }
+    .hero p { color: var(--muted); font-size: 15px; line-height: 1.7; }
+    .tags { display: flex; flex-wrap: wrap; gap: 8px; margin: 14px 0 18px; }
+    .tag { padding: 6px 10px; border-radius: 999px; background: rgba(77,163,255,.14); border: 1px solid rgba(77,163,255,.25); color: #d8ebff; font-size: 12px; }
+    .cta { display: flex; gap: 12px; flex-wrap: wrap; }
+    .btn {
+      border: 0; border-radius: 12px; padding: 12px 16px; cursor: pointer; font-weight: 700;
+      background: linear-gradient(135deg, var(--brand), #6792ff); color: white; box-shadow: 0 8px 22px rgba(77,163,255,.28);
+    }
+    .btn.secondary { background: rgba(255,255,255,.08); box-shadow: none; border: 1px solid var(--line); }
+    .stats { display: grid; grid-template-columns: repeat(2,1fr); gap: 12px; }
+    .stat { padding: 18px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+    .stat .k { color: var(--muted); font-size: 12px; margin-bottom: 10px; }
+    .stat .v { font-size: 24px; font-weight: 800; }
+    .layout { display: grid; grid-template-columns: 420px 1fr; gap: 20px; }
+    .panel { padding: 18px; }
+    .panel h2, .panel h3 { margin: 0 0 14px; }
+    .section-title { font-size: 18px; margin-bottom: 14px; }
+    .field { margin-bottom: 14px; }
+    .field label { display:block; margin-bottom: 8px; color: #d7e4ff; font-size: 13px; }
+    .field input, .field select, .field textarea {
+      width: 100%; padding: 12px 14px; border-radius: 12px; border: 1px solid var(--line);
+      background: rgba(255,255,255,.05); color: var(--text); outline: none;
+    }
+    .grid2 { display:grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .member-list { display: flex; flex-direction: column; gap: 12px; margin-bottom: 12px; }
+    .member {
+      padding: 14px; border-radius: 16px; background: var(--card); border: 1px solid var(--line);
+    }
+    .member-head { display:flex; justify-content: space-between; align-items:center; margin-bottom: 10px; }
+    .member-name { font-weight: 800; }
+    .remove { background: transparent; color: #ff9da5; border: 1px solid rgba(255,157,165,.35); border-radius: 10px; padding: 6px 10px; cursor:pointer; }
+    .result-area { display:grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
+    .mapbox, .analysis, .ranking, .article-card { padding: 18px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); }
+    .mapbox { min-height: 530px; position: relative; overflow: hidden; }
+    .mapgrid {
+      position:absolute; inset:0;
+      background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
+      background-size: 44px 44px;
+      opacity: .55;
+    }
+    .river {
+      position:absolute; left: 42%; top:-5%; width: 180px; height: 110%; transform: rotate(16deg);
+      background: linear-gradient(180deg, rgba(77,163,255,.18), rgba(77,163,255,.08)); filter: blur(0px); border-left: 2px solid rgba(77,163,255,.26); border-right: 2px solid rgba(77,163,255,.18);
+      border-radius: 80px;
+    }
+    .poi, .user-dot, .route-dot {
+      position:absolute; transform: translate(-50%, -50%);
+    }
+    .user-dot {
+      width: 14px; height: 14px; border-radius: 50%; border: 2px solid rgba(255,255,255,.9); box-shadow: 0 0 0 7px rgba(255,255,255,.08);
+    }
+    .route-label, .poi-label {
+      position:absolute; transform: translate(-50%, 0); font-size: 12px; padding: 6px 10px; border-radius: 999px; white-space: nowrap;
+      background: rgba(9,15,30,.78); border: 1px solid var(--line); color: #e9f2ff;
+    }
+    .poi {
+      width: 18px; height: 18px; border-radius: 50% 50% 50% 0; transform: translate(-50%,-50%) rotate(-45deg);
+      background: linear-gradient(135deg, var(--brand2), #00b7ff); box-shadow: 0 10px 24px rgba(0,183,255,.3);
+    }
+    .poi::after { content:''; position:absolute; width:8px; height:8px; border-radius:50%; background:#fff; top:5px; left:5px; }
+    .route-line { position:absolute; height: 3px; transform-origin:left center; border-radius:999px; opacity:.8; }
+    .legend { position:absolute; left: 16px; bottom: 16px; right: 16px; display:flex; flex-wrap: wrap; gap: 8px; }
+    .legend span { font-size: 12px; color: var(--muted); padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(4,10,22,.45); }
+    .ranking { margin-top: 18px; }
+    .rank-item { padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.04); margin-bottom: 12px; }
+    .rank-top { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:10px; }
+    .score { color: var(--warn); font-weight: 800; }
+    .chips { display:flex; gap:8px; flex-wrap:wrap; margin-top:8px; }
+    .chip { font-size:12px; border-radius:999px; padding:5px 8px; background: rgba(126,242,154,.09); border: 1px solid rgba(126,242,154,.22); color: #d8ffe2; }
+    .analysis ul { margin: 10px 0 0 18px; color: var(--muted); line-height: 1.8; }
+    .footer { margin-top: 22px; color: var(--muted); font-size: 13px; }
+    .article-card h3 { margin-top: 0; }
+    .article-card p { color: var(--muted); line-height: 1.8; }
+    .topbar { display:flex; justify-content: space-between; align-items:center; gap: 12px; margin-bottom: 18px; }
+    .brand { font-weight: 900; letter-spacing: .4px; }
+    .small { color: var(--muted); font-size: 13px; }
+    @media (max-width: 1024px) {
+      .hero, .layout, .result-area { grid-template-columns: 1fr; }
+      .mapbox { min-height: 420px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="topbar">
+      <div>
+        <div class="brand">AI 多人出行汇合点推荐助手</div>
+        <div class="small">GitHub Pages 静态演示版 · 适合作为征文配套展示页</div>
+      </div>
+      <div class="small"><a href="./article.html">查看配套文章页 →</a></div>
+    </div>
+
+    <section class="hero">
+      <div class="hero-card">
+        <h1>把“大家约哪里见”<br>变成一个可解释、可比较、可落地的智能决策</h1>
+        <p>
+          这个演示页模拟了一个基于 <strong>AI + 地图能力</strong> 的多人出行场景：输入每个人的出发点、交通方式偏好、预算与聚会诉求，系统输出推荐汇合点、推荐理由、各成员到达时长对比与决策解释。
+        </p>
+        <div class="tags">
+          <span class="tag">AI Agent</span>
+          <span class="tag">多人汇合点推荐</span>
+          <span class="tag">路线规划</span>
+          <span class="tag">POI 检索</span>
+          <span class="tag">GitHub Pages</span>
+        </div>
+        <div class="cta">
+          <button class="btn" id="runBtn">立即生成推荐</button>
+          <button class="btn secondary" id="fillSampleBtn">填充示例数据</button>
+        </div>
+      </div>
+      <div class="stats">
+        <div class="stat"><div class="k">推荐候选点</div><div class="v" id="poiCount">3</div></div>
+        <div class="stat"><div class="k">参与成员</div><div class="v" id="memberCount">3</div></div>
+        <div class="stat"><div class="k">最优总评分</div><div class="v" id="topScore">91</div></div>
+        <div class="stat"><div class="k">决策模式</div><div class="v" style="font-size:18px">公平性 + 可达性</div></div>
+      </div>
+    </section>
+
+    <section class="layout">
+      <div class="panel">
+        <h2 class="section-title">输入条件</h2>
+        <div class="field">
+          <label>聚会诉求</label>
+          <textarea id="goal" rows="3" placeholder="例如：周五晚上聚餐，希望地铁方便、不要太贵、最好附近有商场或安静咖啡馆"></textarea>
+        </div>
+        <div class="field grid2">
+          <div>
+            <label>预算偏好</label>
+            <select id="budget">
+              <option value="low">人均 50-80</option>
+              <option value="mid" selected>人均 80-150</option>
+              <option value="high">人均 150+</option>
+            </select>
+          </div>
+          <div>
+            <label>时间容忍度</label>
+            <select id="tolerance">
+              <option value="tight">尽量都在 30 分钟内</option>
+              <option value="normal" selected>允许 45 分钟左右</option>
+              <option value="loose">可接受 60 分钟内</option>
+            </select>
+          </div>
+        </div>
+        <div class="field grid2">
+          <div>
+            <label>偏好氛围</label>
+            <select id="vibe">
+              <option value="food" selected>聚餐优先</option>
+              <option value="coffee">咖啡聊天</option>
+              <option value="shopping">商圈娱乐</option>
+              <option value="quiet">安静办公</option>
+            </select>
+          </div>
+          <div>
+            <label>是否偏好地铁直达</label>
+            <select id="metro">
+              <option value="yes" selected>优先地铁方便</option>
+              <option value="ok">都可以</option>
+              <option value="no">不强制</option>
+            </select>
+          </div>
+        </div>
+
+        <h3>参与成员</h3>
+        <div class="member-list" id="memberList"></div>
+        <div class="cta">
+          <button class="btn secondary" id="addMemberBtn">+ 添加成员</button>
+        </div>
+        <div class="footer">
+          注：当前为静态演示版，模拟了“地图 + AI 决策解释”效果，适合放在 GitHub Pages 作为作品展示页。
+        </div>
+      </div>
+
+      <div>
+        <div class="result-area">
+          <div class="mapbox" id="mapbox">
+            <div class="mapgrid"></div>
+            <div class="river"></div>
+            <div class="legend">
+              <span>● 用户出发点</span>
+              <span>◆ 候选汇合点</span>
+              <span>— 路线示意</span>
+            </div>
+          </div>
+          <div class="analysis" id="analysisBox">
+            <h3>AI 推荐解释</h3>
+            <div id="analysisText" class="small">点击“立即生成推荐”后，系统会输出推荐逻辑。</div>
+            <ul id="analysisList"></ul>
+          </div>
+        </div>
+
+        <div class="ranking" id="rankingBox">
+          <h3>候选汇合点排名</h3>
+        </div>
+
+        <div class="article-card">
+          <h3>适合写进征文的亮点</h3>
+          <p>
+            这个 Demo 强调的是“多人协同决策”而不是单人路线查询。文章可以围绕 <strong>公平性、通勤成本、POI 匹配度、商圈吸引力、决策可解释性</strong> 展开，既容易打动评委，也容易做传播。
+          </p>
+          <p>
+            你在正式项目里，可以把这里的静态数据替换为真实的地图检索、路线规划与时间估算能力，再由大模型对候选点做二次排序与自然语言总结。
+          </p>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    const sampleMembers = [
+      { name: 'A 同学', start: '腾讯滨海大厦', transport: '地铁优先', x: 20, y: 28, color: '#63a7ff' },
+      { name: 'B 同学', start: '南山区科技园', transport: '打车/步行结合', x: 76, y: 24, color: '#ff8f70' },
+      { name: 'C 同学', start: '福田会展中心', transport: '地铁优先', x: 34, y: 78, color: '#7ef29a' }
+    ];
+
+    const poiTemplates = [
+      { name: '后海万象汇商圈', x: 42, y: 38, tags: ['商圈成熟', '餐饮丰富', '地铁方便'], base: 88 },
+      { name: '车公庙商务餐饮带', x: 44, y: 61, tags: ['交通枢纽', '多人聚餐友好', '均衡'], base: 91 },
+      { name: '深圳湾万象城片区', x: 60, y: 42, tags: ['环境较好', '品质餐饮', '适合约会/聚餐'], base: 84 }
+    ];
+
+    const memberList = document.getElementById('memberList');
+    const mapbox = document.getElementById('mapbox');
+    const rankingBox = document.getElementById('rankingBox');
+    const analysisText = document.getElementById('analysisText');
+    const analysisList = document.getElementById('analysisList');
+    const memberCount = document.getElementById('memberCount');
+    const topScore = document.getElementById('topScore');
+
+    let members = JSON.parse(JSON.stringify(sampleMembers));
+
+    function renderMembers() {
+      memberList.innerHTML = '';
+      members.forEach((m, idx) => {
+        const el = document.createElement('div');
+        el.className = 'member';
+        el.innerHTML = `
+          <div class="member-head">
+            <div class="member-name">成员 ${idx + 1}</div>
+            ${members.length > 2 ? `<button class="remove" data-idx="${idx}">删除</button>` : ''}
+          </div>
+          <div class="grid2">
+            <div class="field"><label>姓名</label><input value="${m.name}" data-key="name" data-idx="${idx}" /></div>
+            <div class="field"><label>出发点</label><input value="${m.start}" data-key="start" data-idx="${idx}" /></div>
+          </div>
+          <div class="grid2">
+            <div class="field"><label>交通偏好</label><input value="${m.transport}" data-key="transport" data-idx="${idx}" /></div>
+            <div class="field"><label>地图坐标（演示）</label><input value="${m.x}, ${m.y}" data-key="coord" data-idx="${idx}" /></div>
+          </div>
+        `;
+        memberList.appendChild(el);
+      });
+      memberCount.textContent = members.length;
+
+      memberList.querySelectorAll('input').forEach(input => {
+        input.addEventListener('input', (e) => {
+          const idx = Number(e.target.dataset.idx);
+          const key = e.target.dataset.key;
+          if (key === 'coord') {
+            const [x, y] = e.target.value.split(',').map(v => Number(v.trim()));
+            if (!Number.isNaN(x) && !Number.isNaN(y)) {
+              members[idx].x = x; members[idx].y = y;
+            }
+          } else {
+            members[idx][key] = e.target.value;
+          }
+        });
+      });
+      memberList.querySelectorAll('.remove').forEach(btn => btn.addEventListener('click', (e) => {
+        members.splice(Number(e.target.dataset.idx), 1);
+        renderMembers();
+      }));
+    }
+
+    function distance(a, b) {
+      return Math.hypot(a.x - b.x, a.y - b.y);
+    }
+
+    function buildResults() {
+      const vibe = document.getElementById('vibe').value;
+      const metro = document.getElementById('metro').value;
+      const budget = document.getElementById('budget').value;
+      return poiTemplates.map((poi, idx) => {
+        const times = members.map((m, i) => {
+          const dist = distance(m, poi);
+          const base = Math.round(dist * 0.72 + (m.transport.includes('打车') ? -3 : 4) + i);
+          return Math.max(12, base);
+        });
+        const fairness = 100 - (Math.max(...times) - Math.min(...times)) * 2.1;
+        const avg = times.reduce((a,b)=>a+b,0) / times.length;
+        const access = 100 - avg * 1.2;
+        let scene = poi.base;
+        if (vibe === 'food' && /餐饮|商圈/.test(poi.tags.join(' '))) scene += 4;
+        if (vibe === 'coffee' && idx === 1) scene += 2;
+        if (vibe === 'shopping' && idx !== 1) scene += 4;
+        if (vibe === 'quiet' && idx === 2) scene += 3;
+        if (metro === 'yes' && poi.tags.includes('地铁方便')) scene += 4;
+        if (budget === 'low' && idx === 1) scene += 3;
+        if (budget === 'high' && idx === 2) scene += 3;
+        const total = Math.round(fairness * 0.35 + access * 0.35 + scene * 0.30);
+        return { poi, times, fairness: Math.round(fairness), access: Math.round(access), total };
+      }).sort((a,b)=>b.total-a.total);
+    }
+
+    function clearMap() {
+      mapbox.querySelectorAll('.user-dot,.route-line,.route-label,.poi,.poi-label').forEach(el => el.remove());
+    }
+
+    function drawLine(x1,y1,x2,y2,color) {
+      const line = document.createElement('div');
+      line.className = 'route-line';
+      const rect = mapbox.getBoundingClientRect();
+      const sx = rect.width * x1 / 100;
+      const sy = rect.height * y1 / 100;
+      const ex = rect.width * x2 / 100;
+      const ey = rect.height * y2 / 100;
+      const len = Math.hypot(ex-sx, ey-sy);
+      const ang = Math.atan2(ey-sy, ex-sx) * 180 / Math.PI;
+      line.style.left = sx + 'px';
+      line.style.top = sy + 'px';
+      line.style.width = len + 'px';
+      line.style.transform = `rotate(${ang}deg)`;
+      line.style.background = color;
+      mapbox.appendChild(line);
+    }
+
+    function dot(cls, x, y, color, label) {
+      const el = document.createElement('div');
+      el.className = cls;
+      el.style.left = x + '%';
+      el.style.top = y + '%';
+      if (color) el.style.background = color;
+      mapbox.appendChild(el);
+      const tag = document.createElement('div');
+      tag.className = cls === 'poi' ? 'poi-label' : 'route-label';
+      tag.style.left = x + '%';
+      tag.style.top = `calc(${y}% + 14px)`;
+      tag.textContent = label;
+      mapbox.appendChild(tag);
+    }
+
+    function renderResults() {
+      clearMap();
+      const results = buildResults();
+      document.getElementById('poiCount').textContent = results.length;
+      topScore.textContent = results[0].total;
+
+      members.forEach((m) => {
+        dot('user-dot', m.x, m.y, m.color, `${m.name} · ${m.start}`);
+      });
+      results.forEach((r, idx) => {
+        dot('poi', r.poi.x, r.poi.y, null, `${idx+1}. ${r.poi.name}`);
+      });
+      members.forEach((m) => drawLine(m.x, m.y, results[0].poi.x, results[0].poi.y, m.color));
+
+      rankingBox.innerHTML = '<h3>候选汇合点排名</h3>';
+      results.forEach((r, idx) => {
+        const card = document.createElement('div');
+        card.className = 'rank-item';
+        card.innerHTML = `
+          <div class="rank-top">
+            <strong>${idx + 1}. ${r.poi.name}</strong>
+            <span class="score">总评分 ${r.total}</span>
+          </div>
+          <div class="small">平均到达时长：${Math.round(r.times.reduce((a,b)=>a+b,0)/r.times.length)} 分钟 · 公平性 ${r.fairness} · 可达性 ${r.access}</div>
+          <div class="chips">
+            ${r.poi.tags.map(t => `<span class="chip">${t}</span>`).join('')}
+            ${r.times.map((t, i) => `<span class="chip">${members[i].name} ${t}min</span>`).join('')}
+          </div>
+        `;
+        rankingBox.appendChild(card);
+      });
+
+      const best = results[0];
+      const goal = document.getElementById('goal').value || '周五晚聚餐，优先考虑交通公平性和地点成熟度';
+      analysisText.innerHTML = `系统推荐 <strong>${best.poi.name}</strong> 作为本次汇合点。它在“多人通勤公平性、商圈成熟度、餐饮匹配度、交通可达性”四个维度上综合得分最高。`;
+      analysisList.innerHTML = `
+        <li>从用户诉求来看：<strong>${goal}</strong>，最适合选择一个既不偏单边、又能快速落地吃饭/聊天的区域。</li>
+        <li>从通勤公平性看，推荐点能够避免“一个人 15 分钟、另一个人 55 分钟”的明显失衡。</li>
+        <li>从场景完整度看，推荐点周边具备餐饮、休闲、地铁换乘等配套，适合聚会后继续安排二次活动。</li>
+        <li>从产品实现角度看，适合继续接入真实 POI 检索、路线规划、拥堵估计与大模型解释输出。</li>
+      `;
+    }
+
+    document.getElementById('runBtn').addEventListener('click', renderResults);
+    document.getElementById('fillSampleBtn').addEventListener('click', () => {
+      document.getElementById('goal').value = '周五晚上 3 个人下班后聚餐，希望地铁方便，人均 100 左右，别让某个人通勤特别远，最好在成熟商圈附近。';
+      renderMembers();
+      renderResults();
+    });
+    document.getElementById('addMemberBtn').addEventListener('click', () => {
+      members.push({ name: `成员${members.length+1}`, start: '自定义地点', transport: '地铁优先', x: 55, y: 55, color: ['#ffd166','#d18fff','#5eead4','#fda4af'][members.length % 4] || '#fff' });
+      renderMembers();
+    });
+
+    renderMembers();
+    document.getElementById('goal').value = '周五晚上 3 个人下班后聚餐，希望地铁方便，人均 100 左右，别让某个人通勤特别远，最好在成熟商圈附近。';
+    renderResults();
+  </script>
+</body>
+</html>

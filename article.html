@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>【腾讯位置服务开发者征文大赛】基于 AI Agent 的多人出行智能汇合点推荐助手</title>
+  <meta name="description" content="征文配套文章页：基于 AI Agent 的多人出行智能汇合点推荐助手" />
+  <style>
+    :root{--bg:#0b1020;--panel:#121a2f;--text:#eaf2ff;--muted:#9eb0d3;--brand:#66a8ff;--line:rgba(255,255,255,.12)}
+    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,#0a1020,#121c30);color:var(--text)}
+    .wrap{max-width:980px;margin:0 auto;padding:32px 20px 60px} .card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    h1,h2,h3{line-height:1.35} h1{font-size:36px;margin:0 0 12px} h2{margin-top:30px} p,li{line-height:1.9;color:#dbe6fb} .muted{color:var(--muted)} .top{margin-bottom:20px} .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(102,168,255,.15);border:1px solid rgba(102,168,255,.28);font-size:12px;margin-right:8px;margin-bottom:8px}
+    .toc{padding:18px 20px;background:rgba(255,255,255,.04);border-radius:16px;border:1px solid var(--line)} a{color:#9dccff} code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px} .quote{border-left:4px solid var(--brand);padding:4px 0 4px 16px;color:#d8e9ff;background:rgba(102,168,255,.06);border-radius:0 12px 12px 0}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="top muted"><a href="./index.html">← 返回 Demo 页面</a></div>
+    <div class="card">
+      <div class="top">
+        <span class="tag">腾讯位置服务开发者征文大赛</span>
+        <span class="tag">AI Agent</span>
+        <span class="tag">多人汇合点推荐</span>
+        <span class="tag">GitHub Pages 展示版</span>
+      </div>
+      <h1>【腾讯位置服务开发者征文大赛】基于 AI Agent 的多人出行智能汇合点推荐助手</h1>
+      <p class="muted">副标题：让“大家约哪里见”从群聊争论，变成一次可以被计算、被解释、被落地执行的智能决策。</p>
+
+      <div class="toc">
+        <strong>目录</strong>
+        <ol>
+          <li>项目背景</li>
+          <li>要解决的真实问题</li>
+          <li>方案设计与核心思路</li>
+          <li>系统架构</li>
+          <li>关键能力拆解</li>
+          <li>页面与交互设计</li>
+          <li>为什么这个方向适合参赛</li>
+          <li>后续可扩展方向</li>
+        </ol>
+      </div>
+
+      <h2>1. 项目背景</h2>
+      <p>
+        日常生活里最常见但又最容易反复拉扯的问题之一，就是多人约见时的“汇合点决策”。三个人、四个人甚至更多人，从不同地点出发，交通方式不同、预算不同、聚会目的不同：有人想吃饭，有人想喝咖啡，有人希望下班后少走路，有人希望在地铁站附近。传统地图工具虽然能做单点检索和单人路线规划，但很难自然地回答一个更真实的问题：<strong>“我们几个人，到底该在哪见面最合适？”</strong>
+      </p>
+      <p>
+        这正是我想用 AI 与地图能力结合去解决的场景。相比“帮一个人找最近的餐厅”，多人汇合点推荐更接近真实世界，也更能体现地图能力从“查询工具”走向“决策助手”的升级。
+      </p>
+
+      <h2>2. 要解决的真实问题</h2>
+      <p>这个项目聚焦的不是单纯的 POI 搜索，而是一个多目标平衡问题：</p>
+      <ul>
+        <li>如何兼顾每个人的出发地点与通勤成本？</li>
+        <li>如何避免某一方承担明显不公平的时间成本？</li>
+        <li>如何结合聚餐、聊天、商圈、安静程度等场景偏好筛选地点？</li>
+        <li>如何让最终推荐结果不是“黑箱”，而是能被解释、被理解？</li>
+      </ul>
+      <div class="quote">
+        一个真正有价值的地图智能体，不只是告诉用户“这里有 10 家店”，而是能够回答“为什么你们应该选这里，而不是另一个地方”。
+      </div>
+
+      <h2>3. 方案设计与核心思路</h2>
+      <p>
+        我的设计思路是，把这个问题拆成三个层次：<strong>候选点生成、路线成本评估、AI 排序解释</strong>。
+      </p>
+      <ul>
+        <li><strong>候选点生成：</strong>根据多个出发点的空间关系，先生成若干中间区域，再结合 POI 类型过滤出适合聚餐/会面的地点。</li>
+        <li><strong>路线成本评估：</strong>对每个候选点计算每位成员的到达时间、换乘复杂度、步行距离等指标。</li>
+        <li><strong>AI 排序解释：</strong>由 AI Agent 对候选点做二次排序，并输出自然语言解释，说明为什么某个地点更适合本次聚会。</li>
+      </ul>
+      <p>
+        这样的设计可以把腾讯位置服务的地图检索、路线规划、位置能力与大模型的理解、总结、解释能力结合起来，形成一个“会思考”的地图产品原型。
+      </p>
+
+      <h2>4. 系统架构</h2>
+      <p>系统可以抽象成下面这条链路：</p>
+      <ol>
+        <li>用户输入成员起点、交通偏好、预算、场景诉求</li>
+        <li>地图服务生成候选汇合区域与 POI 列表</li>
+        <li>路线规划能力计算每个人到达每个候选点的成本</li>
+        <li>Agent 根据公平性、平均耗时、场景匹配度进行综合排序</li>
+        <li>前端将推荐结果可视化，并展示可解释结论</li>
+      </ol>
+      <p>
+        在本次演示页中，我先用 GitHub Pages 做了一个静态可交互原型，模拟了输入条件、候选点对比、推荐理由与可视化路径。后续如果接入真实 API，就可以把这个静态原型升级为一个真正可运行的产品。
+      </p>
+
+      <h2>5. 关键能力拆解</h2>
+      <h3>5.1 多人公平性</h3>
+      <p>
+        单人导航里“最快”往往就是最优，但多人决策不是。一个候选点如果让 A 只花 10 分钟、却让 B 需要 55 分钟，那么整体体验其实并不好。因此我在方案中把“公平性”视为核心指标之一，用于约束最大-最小通勤差值。
+      </p>
+
+      <h3>5.2 场景匹配度</h3>
+      <p>
+        同样是汇合点，用户诉求可能完全不同：有人要商务会谈，有人要朋友聚餐，有人只想找个能坐下来聊天的安静空间。所以候选点不应只看距离，还要看商圈成熟度、餐饮密度、交通便利度，以及是否符合用户输入的场景偏好。
+      </p>
+
+      <h3>5.3 可解释性</h3>
+      <p>
+        这是我认为 AI+地图最值得做的部分。很多推荐系统会直接给结论，但用户会问：为什么是这里？本项目把解释作为正式输出的一部分，让系统不仅提供结果，还说明决策依据，例如“该地点在三位成员之间通勤更均衡”“附近餐饮更丰富”“地铁到达更直接”等。
+      </p>
+
+      <h2>6. 页面与交互设计</h2>
+      <p>
+        这次我把作品拆成两个 GitHub Pages 页面：一个是交互式 Demo 页面，一个是配套文章页。Demo 页允许用户填写成员信息与聚会诉求，并实时生成候选汇合点排名；文章页则用于完整说明项目背景、问题拆解、架构设计与参赛价值。这样的结构非常适合征文场景：文章讲清楚方法论，页面负责展示效果。
+      </p>
+      <p>
+        在视觉上，我没有把页面做成传统后台管理系统，而是尽量突出“地图智能体”的科技感，同时保留信息可读性。对参赛作品来说，这种“能看、能点、能理解”的展示方式，比一堆静态截图更有说服力。
+      </p>
+
+      <h2>7. 为什么这个方向适合参赛</h2>
+      <ul>
+        <li><strong>主题贴合：</strong>它天然符合“AI+地图 · 智能进化”的大方向。</li>
+        <li><strong>场景真实：</strong>多人约见是高频刚需，不是假想概念。</li>
+        <li><strong>易于扩展：</strong>后续可扩展到聚餐、旅行、看房、跨城汇合等场景。</li>
+        <li><strong>易于传播：</strong>“你们到底约哪见”这个问题人人都懂，天然有分享讨论价值。</li>
+      </ul>
+
+      <h2>8. 后续可扩展方向</h2>
+      <p>如果继续完善，我会沿着以下方向升级：</p>
+      <ul>
+        <li>接入真实地图检索与路线规划能力，替换静态候选点</li>
+        <li>加入实时路况、拥堵时段、天气等上下文因素</li>
+        <li>支持多人多天行程场景，例如城市一日游或多站点串联</li>
+        <li>输出更完整的“为什么不推荐其他候选点”的反向解释</li>
+      </ul>
+
+      <h2>结语</h2>
+      <p>
+        我认为，地图产品的下一步不是“展示更多信息”，而是“帮助用户更快做出决策”。多人出行智能汇合点推荐助手，就是一个很好的切入口。它把地图能力、路线能力、场景理解与 AI 解释融合到了一起，也让我更具体地感受到：地图确实可以从一个被动工具，成长为一个主动协助决策的智能伙伴。
+      </p>
+      <p class="muted">如果你正在查看 GitHub Pages 版本，可以同时打开 Demo 页面，体验这个原型的交互效果。</p>
+    </div>
+  </div>
+</body>
+</html>
