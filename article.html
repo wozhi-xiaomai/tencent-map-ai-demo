@@ -6,11 +6,47 @@
   <title>【腾讯位置服务开发者征文大赛】基于 AI Agent 的多人出行智能汇合点推荐助手</title>
   <meta name="description" content="征文配套文章页：基于 AI Agent 的多人出行智能汇合点推荐助手" />
   <style>
-    :root{--bg:#0b1020;--panel:#121a2f;--text:#eaf2ff;--muted:#9eb0d3;--brand:#66a8ff;--line:rgba(255,255,255,.12)}
-    *{box-sizing:border-box} body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,#0a1020,#121c30);color:var(--text)}
-    .wrap{max-width:980px;margin:0 auto;padding:32px 20px 60px} .card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
-    h1,h2,h3{line-height:1.35} h1{font-size:36px;margin:0 0 12px} h2{margin-top:30px} p,li{line-height:1.9;color:#dbe6fb} .muted{color:var(--muted)} .top{margin-bottom:20px} .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(102,168,255,.15);border:1px solid rgba(102,168,255,.28);font-size:12px;margin-right:8px;margin-bottom:8px}
-    .toc{padding:18px 20px;background:rgba(255,255,255,.04);border-radius:16px;border:1px solid var(--line)} a{color:#9dccff} code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px} .quote{border-left:4px solid var(--brand);padding:4px 0 4px 16px;color:#d8e9ff;background:rgba(102,168,255,.06);border-radius:0 12px 12px 0}
+    :root{
+      --bg:#0b1020;--panel:#121a2f;--text:#eaf2ff;--muted:#9eb0d3;--brand:#66a8ff;--brand2:#6cf0c2;--line:rgba(255,255,255,.12);--warn:#ffd166;
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Microsoft YaHei",sans-serif;background:linear-gradient(180deg,#0a1020,#121c30);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto;padding:32px 20px 60px}
+    .card{background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:20px;padding:28px;box-shadow:0 10px 30px rgba(0,0,0,.25)}
+    h1,h2,h3{line-height:1.35}
+    h1{font-size:36px;margin:0 0 12px}
+    h2{margin-top:34px}
+    p,li{line-height:1.9;color:#dbe6fb}
+    .muted{color:var(--muted)}
+    .top{margin-bottom:20px}
+    .tag{display:inline-block;padding:6px 10px;border-radius:999px;background:rgba(102,168,255,.15);border:1px solid rgba(102,168,255,.28);font-size:12px;margin-right:8px;margin-bottom:8px}
+    .toc,.panel,.callout{padding:18px 20px;background:rgba(255,255,255,.04);border-radius:16px;border:1px solid var(--line)}
+    a{color:#9dccff}
+    code{background:rgba(255,255,255,.08);padding:2px 6px;border-radius:6px}
+    .quote{border-left:4px solid var(--brand);padding:4px 0 4px 16px;color:#d8e9ff;background:rgba(102,168,255,.06);border-radius:0 12px 12px 0}
+    .hero-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:18px;margin-top:20px}
+    .metric-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px}
+    .metric{padding:16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .metric .k{font-size:12px;color:var(--muted);margin-bottom:8px}
+    .metric .v{font-size:22px;font-weight:800}
+    .diagram{display:grid;gap:12px;margin-top:14px}
+    .diagram-row{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;align-items:stretch}
+    .diagram-node{padding:16px;border-radius:16px;background:linear-gradient(180deg,rgba(102,168,255,.12),rgba(255,255,255,.03));border:1px solid var(--line);min-height:110px}
+    .diagram-node strong{display:block;margin-bottom:8px}
+    .diagram-arrow{text-align:center;color:var(--muted);font-size:22px;display:flex;align-items:center;justify-content:center}
+    .flow-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:14px}
+    .flow-step{padding:16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+    .flow-step .num{display:inline-flex;width:28px;height:28px;border-radius:50%;align-items:center;justify-content:center;background:rgba(108,240,194,.15);border:1px solid rgba(108,240,194,.28);margin-bottom:10px;color:#d8fff1;font-weight:700}
+    .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+    .badge{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;background:rgba(126,242,154,.10);border:1px solid rgba(126,242,154,.22);color:#d8ffe2}
+    .warn{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:999px;font-size:12px;background:rgba(255,209,102,.10);border:1px solid rgba(255,209,102,.22);color:#ffe9b0}
+    .checklist li{margin-bottom:8px}
+    .demo-link{margin-top:16px;padding:16px;border-radius:16px;background:rgba(77,163,255,.08);border:1px solid rgba(77,163,255,.24)}
+    @media (max-width: 960px){
+      .hero-grid,.split,.flow-grid,.diagram-row{grid-template-columns:1fr}
+      .diagram-arrow{transform:rotate(90deg);min-height:24px}
+      .metric-grid{grid-template-columns:1fr}
+    }
   </style>
 </head>
 <body>
@@ -26,18 +62,40 @@
       <h1>【腾讯位置服务开发者征文大赛】基于 AI Agent 的多人出行智能汇合点推荐助手</h1>
       <p class="muted">副标题：让“大家约哪里见”从群聊争论，变成一次可计算、可解释、可展示、可落地的智能决策。</p>
 
-      <div class="toc">
+      <div class="hero-grid">
+        <div class="callout">
+          <div class="badge">作品定位：AI + 地图决策助手</div>
+          <p>
+            这个项目不只是做“找附近店铺”，而是解决一个更真实也更容易共鸣的问题：<strong>多人从不同地点出发，到底该在哪见面，才算公平、方便、符合场景需求？</strong>
+          </p>
+          <p>
+            我把它设计成一个兼顾演示效果与实际落地潜力的作品：前端先做成可交互原型，方法论写进文章页，后续再逐步接入腾讯位置服务和 AI 能力，形成真正可运行的智能体产品。
+          </p>
+        </div>
+        <div class="panel">
+          <div class="metric-grid">
+            <div class="metric"><div class="k">核心场景</div><div class="v">多人汇合决策</div></div>
+            <div class="metric"><div class="k">当前形态</div><div class="v">可交互演示原型</div></div>
+            <div class="metric"><div class="k">能力关键词</div><div class="v">公平 / 可达 / 可解释</div></div>
+            <div class="metric"><div class="k">后续升级</div><div class="v">真实地图 API + LLM</div></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="toc" style="margin-top:20px;">
         <strong>目录</strong>
         <ol>
           <li>项目背景</li>
           <li>要解决的真实问题</li>
           <li>方案设计与核心思路</li>
-          <li>系统架构</li>
+          <li>系统架构图</li>
+          <li>关键流程图</li>
           <li>关键能力拆解</li>
-          <li>页面与交互设计</li>
+          <li>Demo 与文章页如何配合展示</li>
           <li>为什么这个方向适合参赛</li>
           <li>技术价值与参赛亮点</li>
-          <li>后续可扩展方向</li>
+          <li>从 Demo 到真实产品的落地路线</li>
+          <li>当前交付清单</li>
         </ol>
       </div>
 
@@ -74,44 +132,87 @@
         这样的设计可以把腾讯位置服务的地图检索、路线规划、位置能力与大模型的理解、总结、解释能力结合起来，形成一个“会思考”的地图产品原型。
       </p>
 
-      <h2>4. 系统架构</h2>
-      <p>系统可以抽象成下面这条链路：</p>
-      <ol>
-        <li>用户输入成员起点、交通偏好、预算、场景诉求</li>
-        <li>地图服务生成候选汇合区域与 POI 列表</li>
-        <li>路线规划能力计算每个人到达每个候选点的成本</li>
-        <li>Agent 根据公平性、平均耗时、场景匹配度进行综合排序</li>
-        <li>前端将推荐结果可视化，并展示可解释结论</li>
-      </ol>
+      <h2>4. 系统架构图</h2>
+      <p>如果把这个作品视为一个完整系统，它可以抽象成下面这条链路：</p>
+      <div class="diagram">
+        <div class="diagram-row">
+          <div class="diagram-node"><strong>用户输入层</strong>成员起点、交通偏好、预算、聚会诉求、场景偏好。</div>
+          <div class="diagram-arrow">→</div>
+          <div class="diagram-node"><strong>地图候选点层</strong>生成中间区域并检索可聚会 POI。</div>
+          <div class="diagram-arrow">→</div>
+          <div class="diagram-node"><strong>路线评估层</strong>计算每位成员到每个候选点的到达成本。</div>
+        </div>
+        <div class="diagram-row">
+          <div class="diagram-node"><strong>决策引擎层</strong>综合公平性、平均耗时、场景匹配度做评分。</div>
+          <div class="diagram-arrow">→</div>
+          <div class="diagram-node"><strong>Agent 解释层</strong>输出推荐理由、反向解释与可读摘要。</div>
+          <div class="diagram-arrow">→</div>
+          <div class="diagram-node"><strong>前端展示层</strong>地图可视化、候选点排名、结果对比与交互说明。</div>
+        </div>
+      </div>
       <p>
-        在本次演示页中，我先用 GitHub Pages 做了一个静态可交互原型，模拟了输入条件、候选点对比、推荐理由与可视化路径。后续如果接入真实 API，就可以把这个静态原型升级为一个真正可运行的产品。
+        在当前版本中，我先把“决策引擎 + 展示层”用前端演示的方式做出来，确保评审能一眼看懂作品价值；后续只要逐步接上真实地图检索和路线规划，就能无缝升级。
       </p>
 
-      <h2>5. 关键能力拆解</h2>
-      <h3>5.1 多人公平性</h3>
+      <h2>5. 关键流程图</h2>
+      <p>从交互角度看，这个产品的运行流程可以概括为以下六步：</p>
+      <div class="flow-grid">
+        <div class="flow-step"><div class="num">1</div><strong>填写成员信息</strong><p>输入多人出发点、交通偏好和聚会诉求。</p></div>
+        <div class="flow-step"><div class="num">2</div><strong>生成候选区域</strong><p>结合空间位置关系找出相对折中的会面区。</p></div>
+        <div class="flow-step"><div class="num">3</div><strong>评估路线成本</strong><p>计算每个人到不同候选点的时间与便利性。</p></div>
+        <div class="flow-step"><div class="num">4</div><strong>做综合评分</strong><p>综合公平性、可达性、场景适配度形成排序。</p></div>
+        <div class="flow-step"><div class="num">5</div><strong>输出解释结论</strong><p>解释为什么推荐第一名、为什么不选第二名。</p></div>
+        <div class="flow-step"><div class="num">6</div><strong>前端可视化展示</strong><p>通过页面让结果“能看懂、能比较、能传播”。</p></div>
+      </div>
+
+      <h2>6. 关键能力拆解</h2>
+      <h3>6.1 多人公平性</h3>
       <p>
         单人导航里“最快”往往就是最优，但多人决策不是。一个候选点如果让 A 只花 10 分钟、却让 B 需要 55 分钟，那么整体体验其实并不好。因此我在方案中把“公平性”视为核心指标之一，用于约束最大-最小通勤差值。
       </p>
 
-      <h3>5.2 场景匹配度</h3>
+      <h3>6.2 场景匹配度</h3>
       <p>
         同样是汇合点，用户诉求可能完全不同：有人要商务会谈，有人要朋友聚餐，有人只想找个能坐下来聊天的安静空间。所以候选点不应只看距离，还要看商圈成熟度、餐饮密度、交通便利度，以及是否符合用户输入的场景偏好。
       </p>
 
-      <h3>5.3 可解释性</h3>
+      <h3>6.3 可解释性</h3>
       <p>
         这是我认为 AI+地图最值得做的部分。很多推荐系统会直接给结论，但用户会问：为什么是这里？本项目把解释作为正式输出的一部分，让系统不仅提供结果，还说明决策依据，例如“该地点在三位成员之间通勤更均衡”“附近餐饮更丰富”“地铁到达更直接”等。
       </p>
 
-      <h2>6. 页面与交互设计</h2>
+      <h3>6.4 反向解释</h3>
       <p>
-        这次我把作品拆成两个 GitHub Pages 页面：一个是交互式 Demo 页面，一个是配套文章页。Demo 页允许用户填写成员信息与聚会诉求，并实时生成候选汇合点排名；文章页则用于完整说明项目背景、问题拆解、架构设计与参赛价值。这样的结构非常适合征文场景：文章讲清楚方法论，页面负责展示效果。
-      </p>
-      <p>
-        在视觉上，我没有把页面做成传统后台管理系统，而是尽量突出“地图智能体”的科技感，同时保留信息可读性。对参赛作品来说，这种“能看、能点、能理解”的展示方式，比一堆静态截图更有说服力。
+        在当前演示版中，我还额外加入了“为什么不是第二名”的说明。这个细节很适合比赛场景，因为它能让评委更明显地感受到：系统不是简单列个榜单，而是真的具备决策比较能力。
       </p>
 
-      <h2>7. 为什么这个方向适合参赛</h2>
+      <h2>7. Demo 与文章页如何配合展示</h2>
+      <div class="split">
+        <div class="panel">
+          <span class="badge">Demo 页面负责“看结果”</span>
+          <ul>
+            <li>填写成员与诉求</li>
+            <li>查看候选点排名</li>
+            <li>调整公平性 / 可达性 / 场景权重</li>
+            <li>看到推荐解释与方案摘要</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <span class="badge">文章页面负责“讲方法”</span>
+          <ul>
+            <li>解释项目背景与真实痛点</li>
+            <li>说明系统架构与能力拆解</li>
+            <li>补全比赛视角下的价值表达</li>
+            <li>呈现从 Demo 到产品的演进路线</li>
+          </ul>
+        </div>
+      </div>
+      <div class="demo-link">
+        <strong>推荐评审浏览路径：</strong>
+        先打开 <a href="./index.html">Demo 页面</a> 看交互效果，再回到当前文章页看设计思路、架构和落地路线。这样的双页结构，比单纯一篇文章或几张截图更有说服力。
+      </div>
+
+      <h2>8. 为什么这个方向适合参赛</h2>
       <ul>
         <li><strong>主题贴合：</strong>它天然符合“AI+地图 · 智能进化”的大方向。</li>
         <li><strong>场景真实：</strong>多人约见是高频刚需，不是假想概念。</li>
@@ -119,29 +220,75 @@
         <li><strong>易于传播：</strong>“你们到底约哪见”这个问题人人都懂，天然有分享讨论价值。</li>
       </ul>
 
-      <h2>8. 技术价值与参赛亮点</h2>
+      <h2>9. 技术价值与参赛亮点</h2>
       <ul>
         <li><strong>主题高度契合：</strong>直接对齐“AI+地图 · 智能进化”的活动主题。</li>
         <li><strong>问题真实：</strong>多人约见是非常高频且容易共鸣的生活/工作场景。</li>
         <li><strong>展示友好：</strong>既能写技术实现，也能直观演示交互效果。</li>
         <li><strong>可解释性强：</strong>推荐结果不是黑箱，更容易让评委理解产品价值。</li>
         <li><strong>可继续落地：</strong>后续接入真实地图服务后即可升级为真正可运行原型。</li>
+        <li><strong>工程路径清晰：</strong>当前前端模块已经按“评分引擎 / 解释层 / API 占位层”拆分，便于继续接真实能力。</li>
       </ul>
 
-      <h2>9. 后续可扩展方向</h2>
-      <p>如果继续完善，我会沿着以下方向升级：</p>
+      <h2>10. 从 Demo 到真实产品的落地路线</h2>
+      <p>如果继续完善，我会沿着下面这条路线升级：</p>
+      <div class="split">
+        <div class="panel">
+          <span class="warn">阶段 1：演示原型（已完成）</span>
+          <ul class="checklist">
+            <li>静态 Demo 页面</li>
+            <li>文章展示页</li>
+            <li>本地 mock 候选点</li>
+            <li>评分、排序、解释、反向解释</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <span class="warn">阶段 2：真实能力接入（待 key）</span>
+          <ul class="checklist">
+            <li>真实 POI 检索</li>
+            <li>真实路线规划 / 通勤时间估算</li>
+            <li>实时路况 / 地铁便利度特征</li>
+            <li>大模型解释与候选点二次排序</li>
+          </ul>
+        </div>
+      </div>
+      <div class="split" style="margin-top:16px;">
+        <div class="panel">
+          <span class="warn">阶段 3：产品化增强</span>
+          <ul class="checklist">
+            <li>收藏、分享、导出结果卡片</li>
+            <li>常用场景模板</li>
+            <li>城市切换与更多场景扩展</li>
+            <li>支持旅行 / 看房 / 商务会面</li>
+          </ul>
+        </div>
+        <div class="panel">
+          <span class="warn">阶段 4：智能体升级</span>
+          <ul class="checklist">
+            <li>支持多轮追问与偏好修正</li>
+            <li>支持“换一个更便宜/更近/更热闹的方案”</li>
+            <li>结合日程、天气、拥堵做上下文决策</li>
+            <li>形成真正的地图智能决策助手</li>
+          </ul>
+        </div>
+      </div>
+
+      <h2>11. 当前交付清单</h2>
+      <p>当前这个仓库已经具备一套完整的比赛展示交付物：</p>
       <ul>
-        <li>接入真实地图检索与路线规划能力，替换静态候选点</li>
-        <li>加入实时路况、拥堵时段、天气等上下文因素</li>
-        <li>支持多人多天行程场景，例如城市一日游或多站点串联</li>
-        <li>输出更完整的“为什么不推荐其他候选点”的反向解释</li>
+        <li><code>index.html</code>：交互式 Demo 页面</li>
+        <li><code>article.html</code>：征文/作品说明页面</li>
+        <li><code>src/scoring.js</code>：决策评分逻辑</li>
+        <li><code>src/explainer.js</code>：解释与摘要生成逻辑</li>
+        <li><code>src/api.js</code>：真实接口占位层</li>
+        <li><code>docs/next-step.md</code>：后续接入真实 key 的实施清单</li>
       </ul>
 
       <h2>结语</h2>
       <p>
         我认为，地图产品的下一步不是“展示更多信息”，而是“帮助用户更快做出决策”。多人出行智能汇合点推荐助手，就是一个很好的切入口。它把地图能力、路线能力、场景理解与 AI 解释融合到了一起，也让我更具体地感受到：地图确实可以从一个被动工具，成长为一个主动协助决策的智能伙伴。
       </p>
-      <p class="muted">如果你正在查看 GitHub Pages 版本，可以同时打开 Demo 页面，体验这个原型的交互效果。</p>
+      <p class="muted">如果你正在查看 GitHub Pages 版本，建议先体验 Demo 页面，再阅读这篇文章页，会更容易看到这个作品的完整表达。</p>
     </div>
   </div>
 </body>
