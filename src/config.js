@@ -2,6 +2,10 @@ export const APP_CONFIG = {
   appName: 'AI 多人出行汇合点推荐助手',
   apiMode: 'mock',
   defaultCity: '深圳',
+  tencentMap: {
+    key: '',
+    center: { lat: 22.540503, lng: 113.934528 },
+  },
   featureFlags: {
     enableMockApi: true,
     enableRealMapApi: false,

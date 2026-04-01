@@ -74,12 +74,14 @@
     .result-area { display:grid; grid-template-columns: 1.1fr .9fr; gap: 18px; }
     .mapbox, .analysis, .ranking, .article-card { padding: 18px; border-radius: 18px; background: var(--card); border: 1px solid var(--line); }
     .mapbox { min-height: 530px; position: relative; overflow: hidden; }
+    .map-canvas { position:absolute; inset:0; z-index:0; }
     .mapgrid {
       position:absolute; inset:0;
       background-image: linear-gradient(rgba(255,255,255,.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,.05) 1px, transparent 1px);
       background-size: 44px 44px;
       opacity: .55;
     }
+    .map-overlay { position:absolute; inset:0; z-index:1; }
     .river {
       position:absolute; left: 42%; top:-5%; width: 180px; height: 110%; transform: rotate(16deg);
       background: linear-gradient(180deg, rgba(77,163,255,.18), rgba(77,163,255,.08)); filter: blur(0px); border-left: 2px solid rgba(77,163,255,.26); border-right: 2px solid rgba(77,163,255,.18);
@@ -103,6 +105,7 @@
     .route-line { position:absolute; height: 3px; transform-origin:left center; border-radius:999px; opacity:.8; }
     .legend { position:absolute; left: 16px; bottom: 16px; right: 16px; display:flex; flex-wrap: wrap; gap: 8px; }
     .legend span { font-size: 12px; color: var(--muted); padding: 7px 10px; border: 1px solid var(--line); border-radius: 999px; background: rgba(4,10,22,.45); }
+    .map-status { position:absolute; top:16px; left:16px; z-index:2; font-size:12px; color:#d8ffe2; padding:8px 10px; border-radius:999px; background:rgba(126,242,154,.12); border:1px solid rgba(126,242,154,.25); }
     .ranking { margin-top: 18px; }
     .rank-item { padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: rgba(255,255,255,.04); margin-bottom: 12px; }
     .rank-top { display:flex; justify-content:space-between; gap:10px; align-items:center; margin-bottom:10px; }
@@ -192,6 +195,11 @@
             </select>
           </div>
         </div>
+        <div class="field">
+          <label>腾讯地图 Key（可选）</label>
+          <input id="mapKey" placeholder="填入 key 后可加载真实腾讯地图底图；不填则继续使用演示地图" />
+          <div class="mini-note">为了方便 GitHub Pages 展示，当前默认不内置 key。你本地填写后即可尝试真实地图底图接入。</div>
+        </div>
         <div class="field grid2">
           <div>
             <label>偏好氛围</label>
@@ -254,8 +262,12 @@
       <div>
         <div class="result-area">
           <div class="mapbox" id="mapbox">
-            <div class="mapgrid"></div>
-            <div class="river"></div>
+            <div id="realMap" class="map-canvas"></div>
+            <div id="mapOverlay" class="map-overlay">
+              <div class="mapgrid"></div>
+              <div class="river"></div>
+            </div>
+            <div class="map-status" id="mapStatus">演示地图模式</div>
             <div class="legend">
               <span>● 用户出发点</span>
               <span>◆ 候选汇合点</span>
@@ -301,9 +313,15 @@
     import { buildResults, normalizeWeights } from './src/scoring.js';
     import { buildExplanation, buildPlanSummary, buildWhyNotRecommendation } from './src/explainer.js';
     import { fetchCandidatePois } from './src/api.js';
+    import { createTencentMap, hasRealMapKey } from './src/map-runtime.js';
+    import { APP_CONFIG } from './src/config.js';
 
     const memberList = document.getElementById('memberList');
     const mapbox = document.getElementById('mapbox');
+    const realMap = document.getElementById('realMap');
+    const mapOverlay = document.getElementById('mapOverlay');
+    const mapStatus = document.getElementById('mapStatus');
+    const mapKeyInput = document.getElementById('mapKey');
     const rankingBox = document.getElementById('rankingBox');
     const analysisText = document.getElementById('analysisText');
     const analysisList = document.getElementById('analysisList');
@@ -321,6 +339,7 @@
     const sceneWeightValue = document.getElementById('sceneWeightValue');
 
     let members = JSON.parse(JSON.stringify(sampleMembers));
+    let tMapInstance = null;
 
     function getWeights() {
       return normalizeWeights({
@@ -383,6 +402,28 @@
 
     function clearMap() {
       mapbox.querySelectorAll('.user-dot,.route-line,.route-label,.poi,.poi-label').forEach((el) => el.remove());
+    }
+
+    async function setupMapIfPossible() {
+      const inputKey = mapKeyInput.value.trim();
+      if (inputKey) {
+        APP_CONFIG.tencentMap.key = inputKey;
+      }
+
+      if (!hasRealMapKey()) {
+        mapOverlay.style.display = 'block';
+        mapStatus.textContent = '演示地图模式';
+        return;
+      }
+
+      try {
+        tMapInstance = await createTencentMap(realMap, APP_CONFIG.tencentMap.center);
+        mapOverlay.style.display = 'none';
+        mapStatus.textContent = '腾讯地图已接入';
+      } catch (error) {
+        mapOverlay.style.display = 'block';
+        mapStatus.textContent = `地图加载失败：${error.message}`;
+      }
     }
 
     function drawLine(x1, y1, x2, y2, color) {
@@ -486,6 +527,10 @@
       renderResults();
     });
 
+    mapKeyInput.addEventListener('change', () => {
+      setupMapIfPossible();
+    });
+
     [fairnessWeightInput, accessWeightInput, sceneWeightInput].forEach((input) => {
       input.addEventListener('input', () => {
         syncWeightLabels();
@@ -508,6 +553,7 @@
     renderMembers();
     syncWeightLabels();
     document.getElementById('goal').value = defaultGoal;
+    setupMapIfPossible();
     renderResults();
   </script>
 </body>
